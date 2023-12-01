@@ -80,7 +80,7 @@ header-includes:
 
 2. Введём в файл lab7-1.asm текст программы из листинга 7.1 (рис. @fig:002).
 
-![Ввод текста программы](image/Снимок экрана от 2023-11-29 18-34-14.png){#fig:002 width=100%}
+![Ввод текста программы](image/Снимок экрана от 2023-11-29 18-34-14.png){#fig:002 width=70%}
 
 Создаём исполняемый файл и проверяем его работу (рис. @fig:003).
 
@@ -116,9 +116,9 @@ header-includes:
 
 ![Создание файла листинга](image/Снимок экрана от 2023-11-30 10-03-26.png){#fig:010 width=100%}
 
-Опишем приведенные на рисунке 2.11 строки. 
+Опишем приведенные на рисунке 2.11 строки (рис. @fig:011).
 
-![Строки файла листинга ](image/Снимок экрана от 2023-11-30 14-29-41.png){#fig:010 width=100%}
+![Строки файла листинга ](image/Снимок экрана от 2023-11-30 14-29-41.png){#fig:011 width=100%}
 
 1) 32 - номер строки файла листинга, 0000001В - адрес (смещение машинного кода от начала текущего сегмента), 89C1 - машинный код, представляющая собой ассемблированную исходную строку в виде шестнадцатеричной последовательности, mov ecx, eax - исходный тест программы (приравнивающий значение ecx к eax). 
 
@@ -126,14 +126,156 @@ header-includes:
 
 3) 34 - номер строки файла листинга, 00000022- адрес (смещение машинного кода от начала текущего сегмента), 8B804000000 - машинный код, представляющая собой ассемблированную исходную строку в виде шестнадцатеричной последовательности, mov ebx, 1 - исходный тест программы (приравнивающий значение eax к 4).
 
+## Задания для самостоятельной работы
+1. Программа нахождения наименьшей из 3 целочисленных переменных a, b и c.
 
-Описываются проведённые действия, в качестве иллюстрации даётся ссылка на иллюстрацию (рис. @fig:001).
+```NASM
+%include 'in_out.asm'
+section        .data
+   msg  db "Наибольшее число: ",0h
+   msgA db "Введите a: ",0h
+   msgB db "Введите b: ",0h
+   msgC db "Введите c: ",0h
+section .bss
+   max resb 10
+   A   resb 10
+   B   resb 10
+   C   resb 10
+section        .text
+   global _start
+_start:
+; ------- Ввод A, B, C --------
+   mov eax,msgA
+   call sprint
+   
+   mov eax,A
+   mov edx,10
+   call sread
+   
+   mov eax,msgB
+   call sprint
+   
+   mov ebx,B
+   mov edx,10
+   call sread
+   
+   mov eax,msgC
+   call sprint
+   
+   mov ecx,C
+   mov edx,10
+   call sread
+; -------- Преобразование ---------
+   mov eax,B
+   call atoi
+   mov [B],eax
+; -------- Записываем А в перенную  max --------
+   mov ecx,[A]
+   mov [max],ecx ; max = A
+; ------- Сравниваем A и C -------------
+   cmp ecx,[C]
+   jg check_B
+   mov ecx,[C]
+   mov [max],ecx
 
-![](image/.png){#fig:001 width=70%}
+check_B:
+   mov eax,max
+   call atoi
+   mov [max],eax
+   
+   mov ecx,[max]
+   cmp ecx,[B]
+   jg  fin
+   mov ecx,[B]
+   mov [max],ecx
+   
+fin:
+   mov eax, msg
+   call sprint
+   mov eax,[max]
+   call iprintLF
+   call quit
+```
+
+Результат (рис. @fig:012).
+
+![Результат работы программы](image/Снимок экрана от 2023-12-01 14-35-33.png){#fig:012 width=70%}
+
+2. Программа, которая для введенных с клавиатуры значений x и a вычисляет значение заданной функции f(x) и выводит результат вычислений (2a − x, x < a, 8, x ≥ a).
+
+```NASM
+%include 'in_out.asm'
+section        .data
+   result_msg  db "Результат: ",0h
+   msgA db "Введите a: ",0h
+   msgX db "Введите x: ",0h
+section .bss
+   a   resb 10
+   x   resb 10
+   result resd 1
+section        .text
+   global _start
+_start:
+; ------- Ввод A  --------
+   mov eax,msgA
+   call sprint
+   
+   mov ecx,a
+   mov edx,10
+   call sread
+   
+; ------- Преобразование A ------
+   mov eax,a
+   call atoi 
+   mov [a],eax
+   
+; ------- Ввод X ------------
+   mov eax,msgX
+   call sprint
+   
+   mov ecx,x
+   mov edx,10
+   call sread
+   
+; -------- Преобразование X ---------
+   mov eax,x
+   call atoi
+   mov [x],eax
+   
+; --------- Сравнение ---------
+   mov eax, [a]
+   cmp eax, [x]
+   jge  less_A
+   
+   mov eax, result_msg
+   call sprint
+   mov eax,8
+   call iprintLF
+   call quit
+   
+less_A:
+   mov eax,[a]
+   mov ebx,2
+   mul ebx
+   sub eax, [x]
+   mov [result], eax
+   
+   mov eax, result_msg
+   call sprint
+   mov eax, [result]
+   call iprintLF
+   
+   call quit
+```
+
+Результат (рис. @fig:013).
+
+![Результат работы программы](image/Снимок экрана от 2023-12-01 18-53-33.png){#fig:013 width=70%}
 
 # Выводы
 
-Здесь кратко описываются итоги проделанной работы.
+Нами были изучены команды условного и безусловного переходов, приобретены навыки написания программ с использованием переходов, мы познакомились с назначением и структурой файла листинга.
+
 
 # Список литературы{.unnumbered}
 
